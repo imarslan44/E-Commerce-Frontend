@@ -2,6 +2,8 @@ import { createContext, use, useEffect, useState } from "react";
 
 import { toast } from "react-toastify";
 import {useNavigate} from "react-router-dom"
+import { getCartItems } from "../../../Backend/controllers/cart.controller";
+import { set } from "mongoose";
 export const ShopContext = createContext();
 
 const ShopContextProvider = (props)=>{
@@ -15,7 +17,42 @@ const ShopContextProvider = (props)=>{
 
    useEffect(() => {
      setToken(localStorage.getItem("token"));
+     
    }, [])
+    useEffect(() => {
+        fetchCartItems();
+        
+    }, [token])
+ useEffect(() => {
+    console.log("Cart items updated:", cartItems);
+ }, [cartItems]);
+   const fetchCartItems = async()=>{
+    console.log(token);
+    if(!token || token === "undefined") return;
+    try{
+        console.log("Fetching cart items");
+      //send request to get cartItems
+      const cartdata = await fetch("http://localhost:4400/api/cart/items", 
+        {
+        method: "GET",
+        headers: {
+            "Content-Type" : "application-json",
+            "Authorization": `Bearer ${token}`
+        }
+
+        },)
+
+        const data = await cartdata.json();
+        console.log(data);
+        if(data?.cartItems && data.cartItems.length > 0){
+         setCartItems(data.cartItems);
+            }
+        
+    } catch(err){
+        console.log(err);
+    }
+
+   }
    
     const  navigate = useNavigate();
  
@@ -25,7 +62,7 @@ const ShopContextProvider = (props)=>{
             const data = await response.json();
             if(response.ok){
                 setProducts(data.products);
-                console.log(data)
+                
             }
         } catch(err){
             console.log(err);
@@ -39,16 +76,34 @@ const ShopContextProvider = (props)=>{
     const addToCart = async(itemId, size)=>{
         
         if(!size)return  toast.error(" Pleas select product size")
-console.log(token)
+
 
        if(!token || token === "undefined") { 
         navigate("/login", { state: { from: `/product/${itemId}` } }); 
        
        }else{
+       //send request to backend to add item to cart
+       try{
+        console.log("Adding to cart", itemId, size);
+        const response = await fetch("http://localhost:4400/api/cart/add", {    
+            method: "POST",
+            headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+            },
+            body: JSON.stringify({ _id: itemId, size: size, quantity: 1 }),
+        });
+    
+        const data = await response.json();
+        console.log(data);
         
-        toast('Item added to cart successfully')
+        toast.success('Item added to cart successfully')
+    }catch(err){
+        console.log(err);
+        toast.error(err.message)   
        }
     }
+}
 
     const getCartCount = ()=>{
       let totalCount = 0;
