@@ -11,6 +11,12 @@ const ShopContextProvider = (props)=>{
     const [showSearch, setShowSearch] = useState(false);
     const [cartItems, setCartItems] = useState({});
     const [products, setProducts] = useState([])
+    const [token, setToken] = useState("")
+
+   useEffect(() => {
+     setToken(localStorage.getItem("token"));
+   }, [])
+   
     const  navigate = useNavigate();
  
     const fetchProducts = async()=>{
@@ -33,22 +39,15 @@ const ShopContextProvider = (props)=>{
     const addToCart = async(itemId, size)=>{
         
         if(!size)return  toast.error(" Pleas select product size")
-        let cartData = structuredClone(cartItems);
+console.log(token)
 
-
-        if(cartData[itemId]){
-            if(cartData[itemId][size]){
-                cartData[itemId][size] += 1;
-            }else{
-               cartData[itemId][size] = 1; 
-            }
-        }else{
-            cartData[itemId] = {};
-            cartData[itemId][size] = 1
-        }
-
-        setCartItems(cartData);
+       if(!token || token === "undefined") { 
+        navigate("/login", { state: { from: `/product/${itemId}` } }); 
+       
+       }else{
+        
         toast('Item added to cart successfully')
+       }
     }
 
     const getCartCount = ()=>{

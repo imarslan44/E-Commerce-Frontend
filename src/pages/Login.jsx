@@ -1,5 +1,5 @@
 import React, {useState} from 'react'
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 const Login = () => {
 const [formData, setFormData] = useState({ name: "", 
@@ -9,7 +9,7 @@ const [formData, setFormData] = useState({ name: "",
   const [currentState, setCurrentState] = useState("Sign Up");
 
   const navigate = useNavigate();
-
+  const location = useLocation().state?.from || "/";
 
     const  handleInpts = (e)=>{
       const {name, value} = e.target;
@@ -38,20 +38,21 @@ const [formData, setFormData] = useState({ name: "",
       if(res.status === 200){
         localStorage.setItem("token", data.token);
         setFormData({ name: "", email: "", password: "" });
-        navigate("/");
+        navigate(location);
         toast.success("Registration Successful");
         
         
       } else {
-        
+        toast.error(data.message);
 
       }
     } catch(err){
         toast.error(err);
         console.log(err)
       }
-  }
+  } //login for login 
   else{
+    
     try{
    
     const { email, password} = formData;
@@ -69,7 +70,7 @@ const [formData, setFormData] = useState({ name: "",
     if(res.status === 200){
       localStorage.setItem("token", data.token);
       setFormData({ name: "", email: "", password: "" });
-      navigate(-1);
+      navigate(location);
       toast.success("Login Successful");
     }
 
