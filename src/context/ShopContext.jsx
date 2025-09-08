@@ -11,26 +11,33 @@ const ShopContextProvider = (props)=>{
     const delivery_fee = 10;
     const [search, setSearch] = useState('');
     const [showSearch, setShowSearch] = useState(false);
-    const [cartItems, setCartItems] = useState({});
+    const [cartItems, setCartItems] = useState([]);
     const [products, setProducts] = useState([])
     const [token, setToken] = useState("")
+
+       const  navigate = useNavigate();
 
    useEffect(() => {
      setToken(localStorage.getItem("token"));
      
    }, [])
-    useEffect(() => {
-        fetchCartItems();
-        
+
+   useEffect(() => {
+        fetchCartItems();  
     }, [token])
- useEffect(() => {
-    console.log("Cart items updated:", cartItems);
- }, [cartItems]);
+
+    useEffect(() => {
+    
+
+    },[cartItems])
+
+
+
    const fetchCartItems = async()=>{
-    console.log(token);
+
     if(!token || token === "undefined") return;
     try{
-        console.log("Fetching cart items");
+       
       //send request to get cartItems
       const cartdata = await fetch("http://localhost:4400/api/cart/items", 
         {
@@ -43,7 +50,7 @@ const ShopContextProvider = (props)=>{
         },)
 
         const data = await cartdata.json();
-        console.log(data);
+      
         if(data?.cartItems && data.cartItems.length > 0){
          setCartItems(data.cartItems);
             }
@@ -54,7 +61,7 @@ const ShopContextProvider = (props)=>{
 
    }
    
-    const  navigate = useNavigate();
+ 
  
     const fetchProducts = async()=>{
         try{
@@ -134,19 +141,19 @@ const ShopContextProvider = (props)=>{
 
     const getCartAmount =  ()=>{
         let totalAmount = 0;
-        for(const items in  cartItems){
-            let itemInfo = products.find((product)=>product._id === items);
-            for(const item in cartItems[items]){
+
+        cartItems.map((items)=>{
+            let itemInfo = items.productId;
+          
                 try{
-                    if(cartItems[items][item] > 0){
-                        totalAmount += itemInfo.price * cartItems[items][item]
-                    }
+                    totalAmount += itemInfo.price * items.quantity;
+                    
                 } catch(err){
                     console.log(err);
 
                 }
-            }
-        }
+            
+        });
         return totalAmount;
 
     }
@@ -154,7 +161,7 @@ const ShopContextProvider = (props)=>{
 
     const value = {
         products, currency, delivery_fee,
-        search, setSearch, showSearch, setShowSearch, cartItems, addToCart, getCartCount, updateQuantity, getCartAmount, navigate
+        search, setSearch, showSearch, setShowSearch, cartItems, addToCart, getCartCount, updateQuantity, getCartAmount, navigate, token
     }
 
     return (

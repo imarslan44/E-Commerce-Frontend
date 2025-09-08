@@ -72,8 +72,9 @@ const [formData, setFormData] = useState({ name: "",
       setFormData({ name: "", email: "", password: "" });
       navigate(location);
       toast.success("Login Successful");
+    } else{
+      toast.error(data.message);
     }
-
 
     } catch(err){
 toast.error(err);
