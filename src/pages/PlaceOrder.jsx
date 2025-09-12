@@ -29,7 +29,7 @@ const PlaceOrder = () => {
    setItems(cartItems);
  }, [cartItems])
 
- console.log(token)
+
 
 
   const HandleAddress = (e) => {
@@ -89,6 +89,59 @@ const PlaceOrder = () => {
  }
   }
 
+const OrderOnStripe = async()=>{
+   try{
+
+     const orderData = {
+      items: Items.map((item)=>{
+        return {
+          productId: item.productId._id,
+          quantity: item.quantity,
+          size: item.size
+        }
+      }),
+      totalAmount: getCartAmount(),
+      shippingAddress: Address,
+      paymentMethodId: method === "COD",
+    }
+
+    const response = await fetch('http://localhost:4400/api/order/stripe', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify(orderData)
+    });
+  console.log(response);
+    const data = await response.json();
+    if(response.success){
+      window.location.href = data.session_url; // Redirect to Stripe Checkout
+
+    } else {
+      toast.error(data.message || "Something went wrong");
+    }
+
+   } catch(error){
+    console.log(error);
+   }
+  }
+
+  const handlePlaceOrder = ()=>{
+    switch(method){
+      case "COD":
+        OrderOnCOD();
+        break;
+      case "stripe":
+        OrderOnStripe();
+        break;
+      case "razorpay":
+        // OrderOnRazorpay();
+        break;
+      default:
+        break;
+    }
+  }
 
 
 
@@ -138,7 +191,7 @@ const PlaceOrder = () => {
         </div>
       </div>
       <div className="w-full text-end mt-8">
-        <button onClick={()=> {method === "COD" && OrderOnCOD()}}  className="bg-black text-white px-16 py-3 text-sm">PLACE ORDER</button>
+        <button onClick={handlePlaceOrder}  className="bg-black text-white px-16 py-3 text-sm">PLACE ORDER</button>
       </div>
     </div>
 
